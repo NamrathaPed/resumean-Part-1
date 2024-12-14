@@ -13,6 +13,17 @@ skills_list = [
     "Python", "Java", "c++", "SQL", "Machine Learning", "Data Analysis",
     "Communication", "Leadership", "Problem-Solving", "DevOps"
 ]
+# Synonym and abbreviation mapping
+skill_synonyms = {
+    "ML": "Machine Learning",
+    "AI": "Artificial Intelligence",
+    "NLP": "Natural Language Processing",
+    "DB": "Database",
+    "SQL Server": "SQL",
+    "C-sharp": "C#",
+    "JS": "JavaScript"
+}
+
 
 # Load the spaCy language model
 nlp = spacy.load("en_core_web_sm")
@@ -133,6 +144,51 @@ def extract_skills(cleaned_text, skills_list):
         logging.error(f"Error extracting skills: {e}")
         return []
 
+from spacy.matcher import Matcher
+
+def extract_skills_with_context(cleaned_text, skills_list, skill_synonyms):
+    """
+    Extracts skills using contextual NLP and maps synonyms/abbreviations to standardized skill names.
+    """
+    # Tokenize and analyze text with Spacy NLP
+    doc = nlp(cleaned_text)
+    extracted_skills = set()
+    
+    for token in doc:
+        # Match skills in the predefined list or their synonyms
+        if token.text in skills_list:
+            extracted_skills.add(token.text)
+        elif token.text in skill_synonyms:
+            extracted_skills.add(skill_synonyms[token.text])  # Map synonym to standard skill name
+
+    # Check for multi-word skills using Spacy's noun chunking
+    for chunk in doc.noun_chunks:
+        chunk_text = chunk.text.lower()
+        for skill in skills_list:
+            if skill.lower() in chunk_text:
+                extracted_skills.add(skill)
+
+    return list(extracted_skills)
+
+
+def extract_combined_skills(cleaned_text, skills_list):
+    try:
+        # Basic extraction
+        basic_skills = extract_skills(cleaned_text, skills_list)
+        
+        # Contextual extraction
+        contextual_skills = extract_skills_with_context(cleaned_text, skills_list)
+        
+        # Combine results, removing duplicates
+        combined_skills = list(set(basic_skills + contextual_skills))
+        
+        return combined_skills
+    except Exception as e:
+        logging.error(f"Error in combined skill extraction: {e}")
+        return []
+
+
+
 
 
 # usage
@@ -162,3 +218,11 @@ print ("Phone_number:", phone)
 
 skills = extract_skills(cleaned, skills_list)
 print("Skills:", skills)
+
+skills_with_context = extract_skills_with_context(cleaned, skills_list, skill_synonyms)
+print("Extracted Skills:", skills_with_context)
+
+combined_skills = extract_combined_skills(cleaned, skills_list)
+print("Extracted Skills (Combined):", combined_skills)
+
+
