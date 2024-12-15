@@ -4,6 +4,7 @@ from docx import Document
 import re
 import spacy
 import logging
+import pandas as pd
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -186,6 +187,21 @@ def extract_combined_skills(cleaned_text, skills_list):
     except Exception as e:
         logging.error(f"Error in combined skill extraction: {e}")
         return []
+    
+    
+
+def load_onet_skills(file_path):
+    """
+    Load skills from the O*NET database CSV file.
+    """
+    # Assuming 'file_path' points to the O*NET Skills CSV file
+    onet_data = pd.read_csv(file_path, delimiter='\t')  # Adjust delimiter if necessary
+    skills = onet_data['Element Name'].tolist()  # Extract the 'Element Name' column
+    return skills
+
+# Example usage
+onet_skills = load_onet_skills('Skills.txt')
+
 
 
 
