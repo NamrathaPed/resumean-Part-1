@@ -188,19 +188,34 @@ def extract_combined_skills(cleaned_text, skills_list):
         logging.error(f"Error in combined skill extraction: {e}")
         return []
     
-    
 
-def load_onet_skills(file_path):
-    """
-    Load skills from the O*NET database CSV file.
-    """
-    # Assuming 'file_path' points to the O*NET Skills CSV file
-    onet_data = pd.read_csv(file_path, delimiter='\t')  # Adjust delimiter if necessary
-    skills = onet_data['Element Name'].tolist()  # Extract the 'Element Name' column
-    return skills
 
-# Example usage
-onet_skills = load_onet_skills('Skills.txt')
+# Load O*NET dataset
+onet_path = "path_to_onet_dataset.csv"  # Replace with your file path
+onet_data = pd.read_csv(onet_path)
+
+# Load Kaggle dataset
+kaggle_path = "path_to_kaggle_dataset.csv"  # Replace with your file path
+kaggle_data = pd.read_csv(kaggle_path)
+
+# Inspect the datasets
+print("O*NET Columns:", onet_data.columns)
+print("Kaggle Columns:", kaggle_data.columns)
+
+# Select and clean relevant columns
+onet_skills = onet_data['skills_column_name'].str.lower().str.strip()  # Replace with actual column name
+kaggle_skills = kaggle_data['skills_column_name'].str.lower().str.strip()  # Replace with actual column name
+
+# Combine and deduplicate skills
+combined_skills = set(onet_skills).union(set(kaggle_skills))
+
+# Convert to DataFrame for further processing
+combined_skills_df = pd.DataFrame(combined_skills, columns=['Skill'])
+
+# Save the combined dataset
+combined_skills_df.to_csv("combined_skills.csv", index=False)
+print("Combined skills saved to 'combined_skills.csv'.")
+
 
 
 
