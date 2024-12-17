@@ -5,6 +5,7 @@ import re
 import spacy
 import logging
 import pandas as pd
+import zipfile
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -187,38 +188,48 @@ def extract_combined_skills(cleaned_text, skills_list):
     except Exception as e:
         logging.error(f"Error in combined skill extraction: {e}")
         return []
-    
 
 
-# Load O*NET dataset
-onet_path = "path_to_onet_dataset.csv"  # Replace with your file path
-onet_data = pd.read_csv(onet_path)
+# File paths for the two Kaggle CSV files
+file_path1 = '/Users/namratha/Downloads/archive (4)/job_skills.csv'  # Replace with the actual path
+file_path2 = '/Users/namratha/Downloads/archive (4)/linkedin_job_postings.csv' # Replace with the actual path
 
-# Load Kaggle dataset
-kaggle_path = "path_to_kaggle_dataset.csv"  # Replace with your file path
-kaggle_data = pd.read_csv(kaggle_path)
+def load_csv(file_path, dataset_name):
+    """
+    Load a CSV file and log details.
+    """
+    try:
+        logging.info(f"Attempting to load {dataset_name} from {file_path}")
+        df = pd.read_csv(file_path)
+        logging.info(f"Successfully loaded {dataset_name}. Shape: {df.shape}")
+        logging.info(f"Columns: {df.columns.tolist()}")
+        logging.info(f"Sample Data:\n{df.head()}\n")
+        return df
+    except Exception as e:
+        logging.error(f"Error loading {dataset_name}: {e}")
+        return None
 
-# Inspect the datasets
-print("O*NET Columns:", onet_data.columns)
-print("Kaggle Columns:", kaggle_data.columns)
+# Load the datasets
+kaggle_df1 = load_csv(file_path1, "Kaggle Dataset 1")
+kaggle_df2 = load_csv(file_path2, "Kaggle Dataset 2")
 
-# Select and clean relevant columns
-onet_skills = onet_data['skills_column_name'].str.lower().str.strip()  # Replace with actual column name
-kaggle_skills = kaggle_data['skills_column_name'].str.lower().str.strip()  # Replace with actual column name
+# Check if datasets were loaded successfully
+if kaggle_df1 is None or kaggle_df2 is None:
+    logging.error("One or both Kaggle datasets failed to load. Please check the file paths and formats.")
+else:
+    logging.info("Both datasets loaded successfully!")
 
-# Combine and deduplicate skills
-combined_skills = set(onet_skills).union(set(kaggle_skills))
+# Display basic information about the datasets
+logging.info("Dataset 1 Info:")
+logging.info(kaggle_df1.info())
+logging.info("Dataset 2 Info:")
+logging.info(kaggle_df2.info())
 
-# Convert to DataFrame for further processing
-combined_skills_df = pd.DataFrame(combined_skills, columns=['Skill'])
-
-# Save the combined dataset
-combined_skills_df.to_csv("combined_skills.csv", index=False)
-print("Combined skills saved to 'combined_skills.csv'.")
-
-
-
-
+# Check for missing values
+logging.info("Missing values in Dataset 1:")
+logging.info(kaggle_df1.isnull().sum())
+logging.info("Missing values in Dataset 2:")
+logging.info(kaggle_df2.isnull().sum())
 
 
 
