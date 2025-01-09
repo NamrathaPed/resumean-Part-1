@@ -1,0 +1,5 @@
+# Add your project dependencies here
+pdfplumber
+python-docx
+spacy
+pandas
